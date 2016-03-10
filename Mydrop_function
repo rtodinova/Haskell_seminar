@@ -1,0 +1,6 @@
+ mydrop k [] = []
+ mydrop k xs = 0
+ mydrop k (x:xs) = [] ++ mydrop (k-1) xs
+ main :: IO()
+ main=do
+ print(mydrop 2 [1..5])v
