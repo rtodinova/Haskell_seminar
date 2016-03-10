@@ -6,9 +6,9 @@ import Test.QuickCheck
 Същото като n ^ k, което разбира се не може да използвате. 
 -}
 mypow n k
-    | k<0    = error "Greshka"
-    | k == 0 =1
-    | otherwise = n* n `mypow` (k-1)
+    | k<0        = error "Greshka"
+    | k == 0     =1
+    | otherwise  = n* n `mypow` (k-1)
 
 {-
 Задача 2.
@@ -33,8 +33,8 @@ mysumpow_lc k xs = sum[x `mypow` k | x<-xs]
 -}
 
 mytake :: Integer -> [a] -> [a]
-mytake n []    =[]
-mytake 0 xs    =[]
+mytake n []      =[]
+mytake 0 xs      =[]
 mytake n (x:xs)  =x:(mytake (n-1) xs)
 
 {-
@@ -46,7 +46,7 @@ mytake n (x:xs)  =x:(mytake (n-1) xs)
 -}
 
 myreverse :: [a] -> [a]
-myreverse []   =[]
+myreverse []      =[]
 myreverse (x:xs)  = myreverse xs ++ [x]
 
 {-
