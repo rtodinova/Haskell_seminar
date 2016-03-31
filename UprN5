@@ -1,0 +1,247 @@
+import Data.Char
+import Data.List
+
+
+{-
+Задача 1. Напишете функция mysubstring sub str, която проверява дали низа subs 
+е подниз на низа str. (Задача 2.б. от домашното)
+-}
+isPrefix :: String -> String -> Bool
+isprefix _ [] = False
+isPrefix [] _ = True
+isPrefix (x:xs) (y:ys) = (x==y) && isPrefix xs ys
+
+mysubstring :: String -> String -> Bool
+mysubstring _ [] = False
+mysubstring xs ys
+    | isPrefix xs ys = True
+    | otherwise = mysubstring xs (tail ys)
+
+{-
+Задача 2. Поднизове: Напишете функция mysubstrings str която за даден символен низ str
+връща списък с всички поднизове на str.
+
+    Пример:
+        mysubstrings "abcd" = ["a", "ab", "abc", "abcd", "b", "bc", "bcd", "c", "cd", "d"]
+-}
+
+myPrefixes :: String -> [String]
+myPrefixes str = [ take i str | i <- [1.. length str] ]
+
+mySufixes xs = [ drop i xs | i <- [0.. length xs-1] ]
+
+mysubstrings :: String -> [String]
+mysubstrings str = concat [ myPrefixes x | x <- mySufixes str ]
+
+
+{-
+Задача 3. Напишете функция mylongestpalindrome str, която да намира най-дълия подниз на
+str, който е палиндром.
+
+    Пример: mylongestpalindrome "BANANA" = "ANANA"
+-}
+mypalindrome :: String -> Bool
+mypalindrome str =  str == reverse str
+
+mypalindromes :: String -> [String]
+mypalindromes str = [ x | x <- mysubstrings str, mypalindrome x] -- filter mypalindrome (mysubs str)
+
+mylongestpalindrome :: String -> String
+mylongestpalindrome str = snd (maximum [ ( length s, s) | s <- mypalindromes str ] )
+
+{-
+Задача 4. Просто пренареждане: Напишете функция myprimereorder xs която получава
+списък xs и връща нов списък ys. В началото на ys трябва да са елементите, които са били
+с индекс просто число в xs. След тях трябва да са всички останали. Индексирането в xs,
+започва от 2.
+
+    Пример:
+        myprimereorder "abcd" = "abdc"
+        myprimereorder [2,3,4,5,6] = [2,3,5,4,6]
+-}
+myindex :: [a] -> [ (Integer , a) ]
+myindex xs = zip [2..] xs
+
+myprime :: Integer -> Bool
+myprime n = (n>1) && null[ d | d <- [2.. n `div` 2] , n `mod` d == 0 ]
+
+myprimereorder :: [a] -> [a]
+myprimereorder xs = [ x | (i,x) <- myindex xs, myprime i] ++ [ x | (i,x) <- myindex xs, not(myprime i) ]
+
+{-
+Задача 5: Напишете функция mylastindex x xs, която приема 2 аргумента - списък от числа и
+число и връща индексa (0-базиран) на последното срещане на числото в списъка. Ако числото не
+се среща в списъка функцията връща грешка.
+
+    Пример:
+        mylastindex 1 [1, 2, 7, 1, 5, 4] = 3
+        mylastindex 7 [3, 1, 7, 5] = 2
+        mylastindex 1 [] = error "not in list"
+        mylastindex 3 [2, 4, 7] = error "not in list"
+-}
+myindex2 :: [a] -> [ (Integer , a) ]
+myindex2 xs = zip [0..] xs
+
+mylastindex :: Integer -> [Integer] -> Integer
+mylastindex x xs
+    | x `elem` xs  = maximum[ i | (i,x1) <- myindex2 xs , x==x1 ]
+    | otherwise = error "not in list"
+	
+{-
+Задача 6. Брой на повторенията на най-малкото число в списъка: Да се напише функция
+mycountmin xs, която намира броя на срещанията на най-малкия елемент на списъка xs в
+него. Списъкът xs е несортиран и e съставен само от положителни цели числа.
+
+    Пример:
+        mycountmin [1, 2, 1, 1, 5, 3] = 3 
+        mycountmin [3, 4, 2] = 1
+        mycountmin [] = 0
+-}
+mycountmin :: [Integer] -> Int
+mycountmin xs = undefined
+
+{-
+Задача 7. Брой на сетнати битове: Напишете функцията mypopcount n, която
+връща броя на сетнатите битове (т.е. единици) в двоичната репрезентация
+на цялото положително число n.
+
+    Пример: 
+        mypopcount 4 = 1
+        mypopcount 255 = 8
+-}
+mypopcount :: Integer -> Integer
+mypopcount n = undefined
+
+{-
+Задача 8. Брой повторения на цифра в число: Напишете функцията mycountdigit d n,
+която връща колко пъти цифрата d се среща в 10-тичния запис на числото n.
+
+    Пример:
+        mycountdigit 2 1234123 = 2
+        mycountdigit 2 (-1234123) = 2
+        mycountdigit 5 1234123 = 0
+-}
+mycountdigit :: Integer -> Integer -> Integer
+mycountdigit d n = undefined
+
+{-
+Задача 9. Най-голям общ делител: Напишете функцията mgcd a b, която приема 2 цели
+числа а и b и връща най-големия им общ делител. За целта може да използвате
+алгоритъма на Евклид, който гласи, че най-големият общ делител на а и b е 
+най-големия общ делител на b и а остатък b ако а не се дели на b или b, ако се.
+
+Не можете да използвате функцията gcd от Прелюдията, която прави точно това.
+
+    Пример:
+        mygcd 12 8 = 4
+        mygcd 8 12 = 4
+        mygcd 35 40 = 5
+-}
+mygcd :: Integer -> Integer -> Integer
+mygcd a b = undefined
+
+{-
+Задача 10. Взаимно прости числа: Наричаме две числа взаимно прости ако най-големият
+им общ делител е 1. Напишете функция mycoprime a b, която приема 2 цели числа а и b
+и връща дали те са взаимно прости.
+
+    Пример:
+        mycoprime 21 25 = True
+        mycoprime 14 35 = False
+-}
+mycoprime :: Integer -> Integer -> Bool
+mycoprime a b = undefined
+
+{-
+Задача 11. Сечение на мултимножества: Да се напише функция myintersect xs ys. Тя
+получава два списъка xs и ys, които могат да съдържат повтарящи се елементи. 
+Функцията трябва да връща нов списък, съдържащ сечението на xs и ys, в който 
+също може да има повторения.
+
+    Пример:
+        myintersect [1, 2, 2] [2, 2, 2, 3] = [2, 2] 
+        myintersect [1, 2, 2] [1, 2, 3, 4] = [1, 2]
+        myintersect [1] [2] = []
+-}
+myintersect :: Eq a => [a] -> [a] -> [a]
+myintersect xs ys = undefined
+
+{-
+Задача 12. Напишете функцията mytruncatableprime n, който връща True, когато n,
+както и всички числа, които се получават чрез премахване на цифри в края на n също са прости.
+
+    Пример:
+        mytruncatableprime 3797 = True  -- тъй като 3797, 379, 37, 3 са прости
+        mytruncatableprime 47 = False   -- тъй като 4 не е просто
+-}
+mytruncatableprime :: Integer -> Bool
+mytruncatableprime n = undefined
+
+{-
+Задача 13. Дефинирайте функция mycosh x n, която пресмята развитието на функцията cosh x
+(хиперболичен косинус) в ред на Тейлър по формулата: 
+    cosh x n = x ^ 0 / 0! + x ^ 2 / 2! + x ^ 4 / 4! ... x ^ (2*n) / n!
+
+    Пример:
+        mycosh 0 100 = 1
+        mycosh (pi / 2) 100 = 2.50917
+-}
+mycosh :: Double -> Integer -> Double
+mycosh x n = undefined
+
+{-
+Задача 14. Напишете функция myrepeat n sep str, която получава число n, низ sep, и низ str
+и връща символният низ получен от повтарянето на str n пъти, и слепването им в един посредством
+сепаратора sep.
+
+    Пример: 
+        myrepeat 3 " ... " "SLEEP"  = "SLEEP ... SLEEP ... SLEEP"
+        myrepeat 5 "!" "WORK"       = "WORK!WORK!WORK!WORK!WORK"
+-}
+myrepeat :: Integer -> String -> String -> String
+myrepeat n sep str = undefined
+
+
+-- Примери от задачите
+main :: IO()
+main = do 
+    print (mysubstrings "abcd")
+
+    print (mylongestpalindrome "BANANA")
+
+    print (myprimereorder "abcd")
+    print (myprimereorder [2,3,4,5,6])
+
+    print (mylastindex 1 [1, 2, 7, 1, 5, 4])
+    print (mylastindex 7 [3, 1, 7, 5])
+
+    print (mycountmin [1, 2, 1, 1, 5, 3])
+    print (mycountmin [3, 4, 2])
+    print (mycountmin [])
+
+    print (mypopcount 4)
+    print (mypopcount 255)
+
+    print (mycountdigit 2 1234123)
+    print (mycountdigit 2 (-1234123))
+    print (mycountdigit 5 1234123)
+
+    print (mygcd 12 8)
+    print (mygcd 8 12)
+    print (mygcd 35 40)
+
+    print (mycoprime 21 25)
+    print (mycoprime 14 35)
+
+    print (myintersect [1, 2, 2] [2, 2, 2, 3])
+    print (myintersect [1, 2, 2] [1, 2, 3, 4])
+    print (myintersect [1] [2])
+
+    print (mytruncatableprime 3797)
+    print (mytruncatableprime 47)
+
+    print (mycosh 0 100)
+    print (mycosh (pi / 2) 100)
+
+    print (myrepeat 3 " ... " "SLEEP")
+    print (myrepeat 5 "!" "WORK")
