@@ -1,0 +1,686 @@
+import Data.Char
+{-
+Основни type classes:
+    1. Eq - имаме операторите == и /=.
+    Примери: горе-долу всичко, което може да ви хрумне :)
+
+    2. Ord - имаме горните оператори (т.е. всеки тип, който е Ord e и Eq),
+    както и операторите за сравнение <, <=, >, >=.
+    Също така имаме функциите min и max. 
+    Примери: Char
+
+    3. Num - имаме (+), (-), (*).
+    Примери: Int/Integer/Float/Double
+-}
+
+-- Функции като аргументи --
+{-
+Задача 1. Използвайте рекурсия, за да напишете функциите:
+  а). mymap f xs, същата като map
+    Пример: mymap last ["abc", "def", "ghi"] = "cfi"
+
+  б). myfilter f xs, същата като filter
+    Пример: myfilter isUpper "aBCd" = "BC"
+-}
+mymap :: (a -> b) -> [a] -> [b]
+mymap f [] = []
+mymap f (x:xs) = f x : mymap f xs
+
+myfilter :: (a -> Bool) -> [a] -> [a]
+myfilter f [] = []
+myfilter f xs = [ x | x <- xs, f x]
+
+{-
+Задача 2. zipWith
+  а). Напишете функция myzipWith f xs ys, същата като zipWith
+    Пример: myzipWith (^) [1, 2, 3] [1, 2, 3] = [1, 4, 27]
+
+  б). Напишете функцията myvsum xs ys, която връща векторната сума
+  на xs и ys
+    Пример: myvsum [1, 2, 3] [4, 5, 6] = [5, 7, 9]
+
+  в). Напишете функцията mysprod xs ys, която връща скаларното
+  произведение на xs и ys
+    Пример: mysprod [1, 2, 3] [4, 5, 6] = 32
+-}
+myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myzipWith f [] ys = []
+myzipWith f xs [] = []
+myzipWith f (x:xs) (y:ys) = f x y : myzipWith f xs ys
+
+myvsum :: Num a => [a] -> [a] -> [a]
+myvsum [] ys = []
+myvsum xs [] = []
+myvsum (x:xs) (y:ys) = (x + y) : myvsum xs ys
+
+mysprod :: Num a => [a] -> [a] -> a
+mysprod xs [] = 0
+mysprod [] ys = 0
+mysprod (x:xs) (y:ys) = (x * y) + mysprod xs ys
+
+
+-- foldr/foldl --
+{-
+Задача 3. Напишете функците:
+  а). myfoldl f acc xs, същата като foldl 
+  b). myfoldr f acc xs, същата като foldr
+-}
+myfoldl :: (b -> a -> b) -> b -> [a] -> b
+myfoldl f acc [] = acc
+myfoldl f acc (x:xs) = myfoldl f (f acc x) xs 
+
+myfoldr :: (a -> b -> b) -> b -> [a] -> b
+myfoldr f acc [] = acc
+myfoldr f acc xs = myfoldr f (f (last xs) acc) (init xs)
+
+{-
+Задача 4. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 1
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+-}
+mysum :: Num a => [a] -> a
+mysum xs = myfoldl (+) 0 xs 
+
+myproduct :: Num a => [a] -> a
+myproduct xs = myfoldl (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = myfoldr (+1) 0 xs 
+
+myreverse :: [a] -> [a]
+myreverse xs = undefined
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = undefined
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = undefined
+
+mymin :: Ord a => [a] -> a
+mymin = undefined
+
+mymax :: Ord a => [a] -> a
+mymax = undefined
+
+
+-- Примери от условията
+main :: IO()
+main = do
+    print (mymap last ["abc", "def", "ghi"])
+    print (myfilter isUpper "aBCd")
+    print (myzipWith (^) [1, 2, 3] [1, 2, 3])
+    print (myvsum [1, 2, 3] [4, 5, 6])
+    print (mysprod [1, 2, 3] [4, 5, 6])
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+import Data.Char
+{-
+Основни type classes:
+    1. Eq - имаме операторите == и /=.
+    Примери: горе-долу всичко, което може да ви хрумне :)
+
+    2. Ord - имаме горните оператори (т.е. всеки тип, който е Ord e и Eq),
+    както и операторите за сравнение <, <=, >, >=.
+    Също така имаме функциите min и max. 
+    Примери: Char
+
+    3. Num - имаме (+), (-), (*).
+    Примери: Int/Integer/Float/Double
+-}
+
+-- Функции като аргументи --
+{-
+Задача 1. Използвайте рекурсия, за да напишете функциите:
+  а). mymap f xs, същата като map
+    Пример: mymap last ["abc", "def", "ghi"] = "cfi"
+
+  б). myfilter f xs, същата като filter
+    Пример: myfilter isUpper "aBCd" = "BC"
+-}
+mymap :: (a -> b) -> [a] -> [b]
+mymap f [] = []
+mymap f (x:xs) = f x : mymap f xs
+
+myfilter :: (a -> Bool) -> [a] -> [a]
+myfilter f [] = []
+myfilter f xs = [ x | x <- xs, f x]
+
+{-
+Задача 2. zipWith
+  а). Напишете функция myzipWith f xs ys, същата като zipWith
+    Пример: myzipWith (^) [1, 2, 3] [1, 2, 3] = [1, 4, 27]
+
+  б). Напишете функцията myvsum xs ys, която връща векторната сума
+  на xs и ys
+    Пример: myvsum [1, 2, 3] [4, 5, 6] = [5, 7, 9]
+
+  в). Напишете функцията mysprod xs ys, която връща скаларното
+  произведение на xs и ys
+    Пример: mysprod [1, 2, 3] [4, 5, 6] = 32
+-}
+myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myzipWith f [] ys = []
+myzipWith f xs [] = []
+myzipWith f (x:xs) (y:ys) = f x y : myzipWith f xs ys
+
+myvsum :: Num a => [a] -> [a] -> [a]
+myvsum [] ys = []
+myvsum xs [] = []
+myvsum (x:xs) (y:ys) = (x + y) : myvsum xs ys
+
+mysprod :: Num a => [a] -> [a] -> a
+mysprod xs [] = 0
+mysprod [] ys = 0
+mysprod (x:xs) (y:ys) = (x * y) + mysprod xs ys
+
+
+-- foldr/foldl --
+{-
+Задача 3. Напишете функците:
+  а). myfoldl f acc xs, същата като foldl 
+  b). myfoldr f acc xs, същата като foldr
+-}
+myfoldl :: (b -> a -> b) -> b -> [a] -> b
+myfoldl f acc [] = acc
+myfoldl f acc (x:xs) = myfoldl f (f acc x) xs 
+
+myfoldr :: (a -> b -> b) -> b -> [a] -> b
+myfoldr f acc [] = acc
+myfoldr f acc xs = myfoldr f (f (last xs) acc) (init xs)
+
+{-
+Задача 4. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 1
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+-}
+mysum :: Num a => [a] -> a
+mysum xs = myfoldl (+) 0 xs 
+
+myproduct :: Num a => [a] -> a
+myproduct xs = myfoldl (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = myfoldr (+1) 0 xs 
+
+myreverse :: [a] -> [a]
+myreverse xs = undefined
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = undefined
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = undefined
+
+mymin :: Ord a => [a] -> a
+mymin = undefined
+
+mymax :: Ord a => [a] -> a
+mymax = undefined
+
+
+-- Примери от условията
+main :: IO()
+main = do
+    print (mymap last ["abc", "def", "ghi"])
+    print (myfilter isUpper "aBCd")
+    print (myzipWith (^) [1, 2, 3] [1, 2, 3])
+    print (myvsum [1, 2, 3] [4, 5, 6])
+    print (mysprod [1, 2, 3] [4, 5, 6])
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+import Data.Char
+{-
+Основни type classes:
+    1. Eq - имаме операторите == и /=.
+    Примери: горе-долу всичко, което може да ви хрумне :)
+
+    2. Ord - имаме горните оператори (т.е. всеки тип, който е Ord e и Eq),
+    както и операторите за сравнение <, <=, >, >=.
+    Също така имаме функциите min и max. 
+    Примери: Char
+
+    3. Num - имаме (+), (-), (*).
+    Примери: Int/Integer/Float/Double
+-}
+
+-- Функции като аргументи --
+{-
+Задача 1. Използвайте рекурсия, за да напишете функциите:
+  а). mymap f xs, същата като map
+    Пример: mymap last ["abc", "def", "ghi"] = "cfi"
+
+  б). myfilter f xs, същата като filter
+    Пример: myfilter isUpper "aBCd" = "BC"
+-}
+mymap :: (a -> b) -> [a] -> [b]
+mymap f [] = []
+mymap f (x:xs) = f x : mymap f xs
+
+myfilter :: (a -> Bool) -> [a] -> [a]
+myfilter f [] = []
+myfilter f xs = [ x | x <- xs, f x]
+
+{-
+Задача 2. zipWith
+  а). Напишете функция myzipWith f xs ys, същата като zipWith
+    Пример: myzipWith (^) [1, 2, 3] [1, 2, 3] = [1, 4, 27]
+
+  б). Напишете функцията myvsum xs ys, която връща векторната сума
+  на xs и ys
+    Пример: myvsum [1, 2, 3] [4, 5, 6] = [5, 7, 9]
+
+  в). Напишете функцията mysprod xs ys, която връща скаларното
+  произведение на xs и ys
+    Пример: mysprod [1, 2, 3] [4, 5, 6] = 32
+-}
+myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myzipWith f [] ys = []
+myzipWith f xs [] = []
+myzipWith f (x:xs) (y:ys) = f x y : myzipWith f xs ys
+
+myvsum :: Num a => [a] -> [a] -> [a]
+myvsum [] ys = []
+myvsum xs [] = []
+myvsum (x:xs) (y:ys) = (x + y) : myvsum xs ys
+
+mysprod :: Num a => [a] -> [a] -> a
+mysprod xs [] = 0
+mysprod [] ys = 0
+mysprod (x:xs) (y:ys) = (x * y) + mysprod xs ys
+
+
+-- foldr/foldl --
+{-
+Задача 3. Напишете функците:
+  а). myfoldl f acc xs, същата като foldl 
+  b). myfoldr f acc xs, същата като foldr
+-}
+myfoldl :: (b -> a -> b) -> b -> [a] -> b
+myfoldl f acc [] = acc
+myfoldl f acc (x:xs) = myfoldl f (f acc x) xs 
+
+myfoldr :: (a -> b -> b) -> b -> [a] -> b
+myfoldr f acc [] = acc
+myfoldr f acc xs = myfoldr f (f (last xs) acc) (init xs)
+
+{-
+Задача 4. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 1
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+-}
+mysum :: Num a => [a] -> a
+mysum xs = myfoldl (+) 0 xs 
+
+myproduct :: Num a => [a] -> a
+myproduct xs = myfoldl (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = myfoldr (+1) 0 xs 
+
+myreverse :: [a] -> [a]
+myreverse xs = undefined
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = undefined
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = undefined
+
+mymin :: Ord a => [a] -> a
+mymin = undefined
+
+mymax :: Ord a => [a] -> a
+mymax = undefined
+
+
+-- Примери от условията
+main :: IO()
+main = do
+    print (mymap last ["abc", "def", "ghi"])
+    print (myfilter isUpper "aBCd")
+    print (myzipWith (^) [1, 2, 3] [1, 2, 3])
+    print (myvsum [1, 2, 3] [4, 5, 6])
+    print (mysprod [1, 2, 3] [4, 5, 6])
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+import Data.Char
+{-
+Основни type classes:
+    1. Eq - имаме операторите == и /=.
+    Примери: горе-долу всичко, което може да ви хрумне :)
+
+    2. Ord - имаме горните оператори (т.е. всеки тип, който е Ord e и Eq),
+    както и операторите за сравнение <, <=, >, >=.
+    Също така имаме функциите min и max. 
+    Примери: Char
+
+    3. Num - имаме (+), (-), (*).
+    Примери: Int/Integer/Float/Double
+-}
+
+-- Функции като аргументи --
+{-
+Задача 1. Използвайте рекурсия, за да напишете функциите:
+  а). mymap f xs, същата като map
+    Пример: mymap last ["abc", "def", "ghi"] = "cfi"
+
+  б). myfilter f xs, същата като filter
+    Пример: myfilter isUpper "aBCd" = "BC"
+-}
+mymap :: (a -> b) -> [a] -> [b]
+mymap f [] = []
+mymap f (x:xs) = f x : mymap f xs
+
+myfilter :: (a -> Bool) -> [a] -> [a]
+myfilter f [] = []
+myfilter f xs = [ x | x <- xs, f x]
+
+{-
+Задача 2. zipWith
+  а). Напишете функция myzipWith f xs ys, същата като zipWith
+    Пример: myzipWith (^) [1, 2, 3] [1, 2, 3] = [1, 4, 27]
+
+  б). Напишете функцията myvsum xs ys, която връща векторната сума
+  на xs и ys
+    Пример: myvsum [1, 2, 3] [4, 5, 6] = [5, 7, 9]
+
+  в). Напишете функцията mysprod xs ys, която връща скаларното
+  произведение на xs и ys
+    Пример: mysprod [1, 2, 3] [4, 5, 6] = 32
+-}
+myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myzipWith f [] ys = []
+myzipWith f xs [] = []
+myzipWith f (x:xs) (y:ys) = f x y : myzipWith f xs ys
+
+myvsum :: Num a => [a] -> [a] -> [a]
+myvsum [] ys = []
+myvsum xs [] = []
+myvsum (x:xs) (y:ys) = (x + y) : myvsum xs ys
+
+mysprod :: Num a => [a] -> [a] -> a
+mysprod xs [] = 0
+mysprod [] ys = 0
+mysprod (x:xs) (y:ys) = (x * y) + mysprod xs ys
+
+
+-- foldr/foldl --
+{-
+Задача 3. Напишете функците:
+  а). myfoldl f acc xs, същата като foldl 
+  b). myfoldr f acc xs, същата като foldr
+-}
+myfoldl :: (b -> a -> b) -> b -> [a] -> b
+myfoldl f acc [] = acc
+myfoldl f acc (x:xs) = myfoldl f (f acc x) xs 
+
+myfoldr :: (a -> b -> b) -> b -> [a] -> b
+myfoldr f acc [] = acc
+myfoldr f acc xs = myfoldr f (f (last xs) acc) (init xs)
+
+{-
+Задача 4. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 1
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+-}
+mysum :: Num a => [a] -> a
+mysum xs = myfoldl (+) 0 xs 
+
+myproduct :: Num a => [a] -> a
+myproduct xs = myfoldl (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = myfoldr (+1) 0 xs 
+
+myreverse :: [a] -> [a]
+myreverse xs = undefined
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = undefined
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = undefined
+
+mymin :: Ord a => [a] -> a
+mymin = undefined
+
+mymax :: Ord a => [a] -> a
+mymax = undefined
+
+
+-- Примери от условията
+main :: IO()
+main = do
+    print (mymap last ["abc", "def", "ghi"])
+    print (myfilter isUpper "aBCd")
+    print (myzipWith (^) [1, 2, 3] [1, 2, 3])
+    print (myvsum [1, 2, 3] [4, 5, 6])
+    print (mysprod [1, 2, 3] [4, 5, 6])
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+import Data.Char
+{-
+Основни type classes:
+    1. Eq - имаме операторите == и /=.
+    Примери: горе-долу всичко, което може да ви хрумне :)
+
+    2. Ord - имаме горните оператори (т.е. всеки тип, който е Ord e и Eq),
+    както и операторите за сравнение <, <=, >, >=.
+    Също така имаме функциите min и max. 
+    Примери: Char
+
+    3. Num - имаме (+), (-), (*).
+    Примери: Int/Integer/Float/Double
+-}
+
+-- Функции като аргументи --
+{-
+Задача 1. Използвайте рекурсия, за да напишете функциите:
+  а). mymap f xs, същата като map
+    Пример: mymap last ["abc", "def", "ghi"] = "cfi"
+
+  б). myfilter f xs, същата като filter
+    Пример: myfilter isUpper "aBCd" = "BC"
+-}
+mymap :: (a -> b) -> [a] -> [b]
+mymap f [] = []
+mymap f (x:xs) = f x : mymap f xs
+
+myfilter :: (a -> Bool) -> [a] -> [a]
+myfilter f [] = []
+myfilter f xs = [ x | x <- xs, f x]
+
+{-
+Задача 2. zipWith
+  а). Напишете функция myzipWith f xs ys, същата като zipWith
+    Пример: myzipWith (^) [1, 2, 3] [1, 2, 3] = [1, 4, 27]
+
+  б). Напишете функцията myvsum xs ys, която връща векторната сума
+  на xs и ys
+    Пример: myvsum [1, 2, 3] [4, 5, 6] = [5, 7, 9]
+
+  в). Напишете функцията mysprod xs ys, която връща скаларното
+  произведение на xs и ys
+    Пример: mysprod [1, 2, 3] [4, 5, 6] = 32
+-}
+myzipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myzipWith f [] ys = []
+myzipWith f xs [] = []
+myzipWith f (x:xs) (y:ys) = f x y : myzipWith f xs ys
+
+myvsum :: Num a => [a] -> [a] -> [a]
+myvsum [] ys = []
+myvsum xs [] = []
+myvsum (x:xs) (y:ys) = (x + y) : myvsum xs ys
+
+mysprod :: Num a => [a] -> [a] -> a
+mysprod xs [] = 0
+mysprod [] ys = 0
+mysprod (x:xs) (y:ys) = (x * y) + mysprod xs ys
+
+
+-- foldr/foldl --
+{-
+Задача 3. Напишете функците:
+  а). myfoldl f acc xs, същата като foldl 
+  b). myfoldr f acc xs, същата като foldr
+-}
+myfoldl :: (b -> a -> b) -> b -> [a] -> b
+myfoldl f acc [] = acc
+myfoldl f acc (x:xs) = myfoldl f (f acc x) xs 
+
+myfoldr :: (a -> b -> b) -> b -> [a] -> b
+myfoldr f acc [] = acc
+myfoldr f acc xs = myfoldr f (f (last xs) acc) (init xs)
+
+{-
+Задача 4. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 1
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+-}
+mysum :: Num a => [a] -> a
+mysum xs = myfoldl (+) 0 xs 
+
+myproduct :: Num a => [a] -> a
+myproduct xs = myfoldl (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = myfoldr (+1) 0 xs 
+
+myreverse :: [a] -> [a]
+myreverse xs = undefined
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = undefined
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = undefined
+
+mymin :: Ord a => [a] -> a
+mymin = undefined
+
+mymax :: Ord a => [a] -> a
+mymax = undefined
+
+
+-- Примери от условията
+main :: IO()
+main = do
+    print (mymap last ["abc", "def", "ghi"])
+    print (myfilter isUpper "aBCd")
+    print (myzipWith (^) [1, 2, 3] [1, 2, 3])
+    print (myvsum [1, 2, 3] [4, 5, 6])
+    print (mysprod [1, 2, 3] [4, 5, 6])
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+v
