@@ -1,0 +1,1335 @@
+ -- така можем да скрием дадени функции от прелюдията, за да си ги предефинираме сами
+import Prelude hiding (map, filter, zip, zipWith, foldl, foldr)
+-- така се импортват само определени функции от даден модул
+import Data.List (sort)
+
+
+-- Рекурсивни дефиниции на map, filter, zip, zipWith, foldl и foldr:
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (x:xs) = f x:map f xs
+
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter f (x:xs) = if f x then x:fxs else fxs where
+    fxs = filter f xs
+
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (x:xs) (y:ys) = (x, y):zip xs ys
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+zipWith _ [] _ = []
+zipWith _ _ [] = []
+zipWith f (x:xs) (y:ys) = f x y:zipWith f xs ys
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f acc []     = acc
+foldl f acc (x:xs) = foldl f (f acc x) xs
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f acc []     = acc
+foldr f acc (x:xs) = f x (foldr f acc xs)
+
+
+{-
+Задача 1. Използвайте zipWith, за дефинирате myzip, същата като zip.
+
+    Пример: myzip [1..] ['a' .. 'z'] = [(1, 'a'), (2, 'b'), (3, 'c'), ... , (26, 'z')]
+-}
+myzip :: [a] -> [b] -> [(a, b)]
+myzip xs ys = zipWith help xs ys
+    where help x y = (x,y)
+
+{-
+Задача 2. Използвайте foldl/foldr, за да напишете функцията myconcat,
+същата като concat. 
+
+    Пример: myconcat [[1], [2], [3]] = [1, 2, 3]
+-}
+myconcat :: [[a]] -> [a]
+myconcat xs = foldr (++) [] xs
+
+{-
+Задача 3. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 10
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+
+Задача 4 от предишното упражнение: НЕ Е НУЖНО да решавате отново подточките,
+които сте решили предния път.
+-}
+mysum :: Num a => [a] -> a
+mysum xs = foldr (+) 0 xs
+
+myproduct :: Num a => [a] -> a
+myproduct xs = foldr (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = foldr (\x acc -> acc + 1) 0 xs
+
+myreverse :: [a] -> [a]
+myreverse xs = foldl (\acc x -> x:acc) [] xs
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = foldl (\acc x -> acc || f x) False xs
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = foldl (\acc x -> acc && f x) False xs
+
+mymin :: Ord a => [a] -> a
+mymin xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x < y = x
+      | otherwise = y
+
+mymax :: Ord a => [a] -> a
+mymax xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x > y = x
+      | otherwise = y
+
+
+{-
+Задача 4. Използвайте zipWith, за да напишете функциите:
+  а). myincreasing xs (зад. 1.б. от контролното)
+  б). mydecreasing xs (зад. 1.б. от контролното)
+  в). mysame xs, която проверява дали всички елементи на xs са еднакви
+  г). myimage xs ys (зад. 3 от контролното)
+-}
+myincreasing :: Ord a => [a] -> Bool
+myincreasing xs = zipWith incr xs (tail xs)
+    where 
+        incr (x:xs) (y:ys)
+	    | xs == [] || ys == [] = True
+	    | x < y = incr xs ys
+	    | otherwise = False
+
+mydecreasing :: Ord a => [a] -> Bool
+mydecreasing xs = undefined
+
+mysame :: Eq a => [a] -> Bool
+mysame xs = undefined
+
+myimage :: (Num a, Eq a) => [a] -> [a] -> Bool
+myimage xs ys = undefined
+
+{-
+Задача 5. Трансформация на Бъроус-Уилър (Burrows-Wheeler transform)
+
+Трансформацията на Бъроус-Уилър, е трансформация върху символни низове, която има
+интересното свойство да групира еднаквите символи в низа близо един до друг. 
+Поради тази причина, тя е често използвана като предварителна стъпка в алгоритмите
+за компресия на данни, както и в биоинформатиката.
+
+Алгоритъмът за намирането и е следния:
+1. Генерираме всички ротации на входния низ, което ни дава списък от низове.
+2. Сортираме списъка лексикографски.
+3. Взимаме последния символ от всеки от редовете.
+
+Пример:
+    "BANANA" -- rotations --> [ "BANANA", -- sort --> [ "ABANAN", -- last symbol --> "NNBAAA"
+                                "ANANAB",               "ANABAN",
+                                "NANABA",               "ANANAB",
+                                "ANABAN",               "BANANA",
+                                "NABANA",               "NABANA",
+                                "ABANAN" ]              "NANABA" ]
+
+a). Напишете функцията myrotate n str, която ротира низа str с n позиции наляво.
+
+    Пример: myrotate 1 "abc" = "bca"
+
+б). Напишете функцията myrotations str, която генерира всички ротации на str.
+
+    Пример: myrotations "abc" = ["abc", "bca", "cab"]
+
+в). Напишете функцията mybwt str, която приема низа str, и връща неговата трансформация
+на Бъроус-Уилър.
+
+    Пример: mybwt "BANANA" = "NNBAAA"
+-}
+myrotate :: Int -> [a] -> [a]
+myrotate n xs = undefined
+
+myrotations :: [a] -> [[a]]
+myrotations xs = undefined
+
+mybwt :: Ord a => [a] -> [a]
+mybwt xs = undefined
+
+{-
+Задача 6. Write what you say sequence:
+
+Редицата се дефинира, така:
+1           -- 1 единица
+11          -- 2 единици
+21          -- 1 двойка, 1 единица
+1211        -- 1 единица, 1 двойка, 2 единици
+111221      -- 3 единици, 2 двойки, 1 единица
+312211      -- ...
+13112221
+....
+
+Ще моделираме всеки ред като списък от цифрите му,
+тъй като това опростява решението.
+
+а). Напишете функцията mywwsnext xs, която приема елемент от редицата и 
+връща следващия след него елемент.
+    Пример: mywwsnext [1] = [1, 1]
+            mywwsnext [1, 2, 1, 1] = [1, 1, 1, 2, 2, 1]
+
+б). Напишете функцията myiterate f x, която приема функция f и първоначална
+стойност x, и връща безкрайния списък [x, f x, f (f x), f (f (fx)) ...]
+
+    Пример: take 5 (myiterate (+1) 0) = [0, 1, 2, 3, 4]
+
+в). Използвайте предните функции, за да напишете функцията mywwsall n, 
+която връща списък с първите n елемента на редицата
+
+    Пример: mywwsall 1 = [[1]]
+            mywwsall 5 = [[1], [1, 1], [2, 1], [1, 2, 1, 1] [1, 1, 1, 2, 2, 1]]
+
+г). Напишете функцията mywws n, която връща n-тия елемент от редицата.
+    
+    Пример: mywws 6 = [3, 1, 2, 2, 1, 1]
+-}
+mywwsnext :: [Int] -> [Int]
+mywwsnext xs = undefined
+
+myiterate :: (a -> a) -> a -> [a]
+myiterate f x = undefined
+
+mywwsall :: Int -> [[Int]]
+mywwsall n = undefined
+
+mywws :: Int -> [Int]
+mywws n = undefined
+
+
+-- Обичайните примери от условията 
+main :: IO()
+main = do
+    print ("exercise 1.")
+    print (myzip [1 ..] ['a' .. 'z'])
+
+    print ("exercise 2.") 
+    print (myconcat [[1], [2], [3]])
+
+    print ("exercise 3.")
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+
+    print ("exercise  4.")
+    print (myincreasing [1, 2, 3, 4])
+    print (myincreasing [1, 2, 5, 4])
+    print (mydecreasing [4, 3, 2, 1])
+    print (mydecreasing [4, 3, 5, 1])
+    print (myimage [1, 2, 3] [4, 5, 6])
+    print (myimage [1, 2, 3] [1, 2, 2])
+
+    print ("exercise  5.")
+    print (myrotate 1 "abc")
+    print (myrotations "abc")
+    print (mybwt "BANANA")
+
+    print ("exercise 6.")
+    print (mywwsnext [1])
+    print (mywwsnext [1, 2, 1, 1])
+    print (take 5 (myiterate (+1) 0))
+    print (mywwsall 1)
+    print (mywwsall 5)
+    print (mywws 6)
+ -- така можем да скрием дадени функции от прелюдията, за да си ги предефинираме сами
+import Prelude hiding (map, filter, zip, zipWith, foldl, foldr)
+-- така се импортват само определени функции от даден модул
+import Data.List (sort)
+
+
+-- Рекурсивни дефиниции на map, filter, zip, zipWith, foldl и foldr:
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (x:xs) = f x:map f xs
+
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter f (x:xs) = if f x then x:fxs else fxs where
+    fxs = filter f xs
+
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (x:xs) (y:ys) = (x, y):zip xs ys
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+zipWith _ [] _ = []
+zipWith _ _ [] = []
+zipWith f (x:xs) (y:ys) = f x y:zipWith f xs ys
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f acc []     = acc
+foldl f acc (x:xs) = foldl f (f acc x) xs
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f acc []     = acc
+foldr f acc (x:xs) = f x (foldr f acc xs)
+
+
+{-
+Задача 1. Използвайте zipWith, за дефинирате myzip, същата като zip.
+
+    Пример: myzip [1..] ['a' .. 'z'] = [(1, 'a'), (2, 'b'), (3, 'c'), ... , (26, 'z')]
+-}
+myzip :: [a] -> [b] -> [(a, b)]
+myzip xs ys = zipWith help xs ys
+    where help x y = (x,y)
+
+{-
+Задача 2. Използвайте foldl/foldr, за да напишете функцията myconcat,
+същата като concat. 
+
+    Пример: myconcat [[1], [2], [3]] = [1, 2, 3]
+-}
+myconcat :: [[a]] -> [a]
+myconcat xs = foldr (++) [] xs
+
+{-
+Задача 3. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 10
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+
+Задача 4 от предишното упражнение: НЕ Е НУЖНО да решавате отново подточките,
+които сте решили предния път.
+-}
+mysum :: Num a => [a] -> a
+mysum xs = foldr (+) 0 xs
+
+myproduct :: Num a => [a] -> a
+myproduct xs = foldr (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = foldr (\x acc -> acc + 1) 0 xs
+
+myreverse :: [a] -> [a]
+myreverse xs = foldl (\acc x -> x:acc) [] xs
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = foldl (\acc x -> acc || f x) False xs
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = foldl (\acc x -> acc && f x) False xs
+
+mymin :: Ord a => [a] -> a
+mymin xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x < y = x
+      | otherwise = y
+
+mymax :: Ord a => [a] -> a
+mymax xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x > y = x
+      | otherwise = y
+
+
+{-
+Задача 4. Използвайте zipWith, за да напишете функциите:
+  а). myincreasing xs (зад. 1.б. от контролното)
+  б). mydecreasing xs (зад. 1.б. от контролното)
+  в). mysame xs, която проверява дали всички елементи на xs са еднакви
+  г). myimage xs ys (зад. 3 от контролното)
+-}
+myincreasing :: Ord a => [a] -> Bool
+myincreasing xs = zipWith incr xs (tail xs)
+    where 
+        incr (x:xs) (y:ys)
+	    | xs == [] || ys == [] = True
+	    | x < y = incr xs ys
+	    | otherwise = False
+
+mydecreasing :: Ord a => [a] -> Bool
+mydecreasing xs = undefined
+
+mysame :: Eq a => [a] -> Bool
+mysame xs = undefined
+
+myimage :: (Num a, Eq a) => [a] -> [a] -> Bool
+myimage xs ys = undefined
+
+{-
+Задача 5. Трансформация на Бъроус-Уилър (Burrows-Wheeler transform)
+
+Трансформацията на Бъроус-Уилър, е трансформация върху символни низове, която има
+интересното свойство да групира еднаквите символи в низа близо един до друг. 
+Поради тази причина, тя е често използвана като предварителна стъпка в алгоритмите
+за компресия на данни, както и в биоинформатиката.
+
+Алгоритъмът за намирането и е следния:
+1. Генерираме всички ротации на входния низ, което ни дава списък от низове.
+2. Сортираме списъка лексикографски.
+3. Взимаме последния символ от всеки от редовете.
+
+Пример:
+    "BANANA" -- rotations --> [ "BANANA", -- sort --> [ "ABANAN", -- last symbol --> "NNBAAA"
+                                "ANANAB",               "ANABAN",
+                                "NANABA",               "ANANAB",
+                                "ANABAN",               "BANANA",
+                                "NABANA",               "NABANA",
+                                "ABANAN" ]              "NANABA" ]
+
+a). Напишете функцията myrotate n str, която ротира низа str с n позиции наляво.
+
+    Пример: myrotate 1 "abc" = "bca"
+
+б). Напишете функцията myrotations str, която генерира всички ротации на str.
+
+    Пример: myrotations "abc" = ["abc", "bca", "cab"]
+
+в). Напишете функцията mybwt str, която приема низа str, и връща неговата трансформация
+на Бъроус-Уилър.
+
+    Пример: mybwt "BANANA" = "NNBAAA"
+-}
+myrotate :: Int -> [a] -> [a]
+myrotate n xs = undefined
+
+myrotations :: [a] -> [[a]]
+myrotations xs = undefined
+
+mybwt :: Ord a => [a] -> [a]
+mybwt xs = undefined
+
+{-
+Задача 6. Write what you say sequence:
+
+Редицата се дефинира, така:
+1           -- 1 единица
+11          -- 2 единици
+21          -- 1 двойка, 1 единица
+1211        -- 1 единица, 1 двойка, 2 единици
+111221      -- 3 единици, 2 двойки, 1 единица
+312211      -- ...
+13112221
+....
+
+Ще моделираме всеки ред като списък от цифрите му,
+тъй като това опростява решението.
+
+а). Напишете функцията mywwsnext xs, която приема елемент от редицата и 
+връща следващия след него елемент.
+    Пример: mywwsnext [1] = [1, 1]
+            mywwsnext [1, 2, 1, 1] = [1, 1, 1, 2, 2, 1]
+
+б). Напишете функцията myiterate f x, която приема функция f и първоначална
+стойност x, и връща безкрайния списък [x, f x, f (f x), f (f (fx)) ...]
+
+    Пример: take 5 (myiterate (+1) 0) = [0, 1, 2, 3, 4]
+
+в). Използвайте предните функции, за да напишете функцията mywwsall n, 
+която връща списък с първите n елемента на редицата
+
+    Пример: mywwsall 1 = [[1]]
+            mywwsall 5 = [[1], [1, 1], [2, 1], [1, 2, 1, 1] [1, 1, 1, 2, 2, 1]]
+
+г). Напишете функцията mywws n, която връща n-тия елемент от редицата.
+    
+    Пример: mywws 6 = [3, 1, 2, 2, 1, 1]
+-}
+mywwsnext :: [Int] -> [Int]
+mywwsnext xs = undefined
+
+myiterate :: (a -> a) -> a -> [a]
+myiterate f x = undefined
+
+mywwsall :: Int -> [[Int]]
+mywwsall n = undefined
+
+mywws :: Int -> [Int]
+mywws n = undefined
+
+
+-- Обичайните примери от условията 
+main :: IO()
+main = do
+    print ("exercise 1.")
+    print (myzip [1 ..] ['a' .. 'z'])
+
+    print ("exercise 2.") 
+    print (myconcat [[1], [2], [3]])
+
+    print ("exercise 3.")
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+
+    print ("exercise  4.")
+    print (myincreasing [1, 2, 3, 4])
+    print (myincreasing [1, 2, 5, 4])
+    print (mydecreasing [4, 3, 2, 1])
+    print (mydecreasing [4, 3, 5, 1])
+    print (myimage [1, 2, 3] [4, 5, 6])
+    print (myimage [1, 2, 3] [1, 2, 2])
+
+    print ("exercise  5.")
+    print (myrotate 1 "abc")
+    print (myrotations "abc")
+    print (mybwt "BANANA")
+
+    print ("exercise 6.")
+    print (mywwsnext [1])
+    print (mywwsnext [1, 2, 1, 1])
+    print (take 5 (myiterate (+1) 0))
+    print (mywwsall 1)
+    print (mywwsall 5)
+    print (mywws 6)
+ -- така можем да скрием дадени функции от прелюдията, за да си ги предефинираме сами
+import Prelude hiding (map, filter, zip, zipWith, foldl, foldr)
+-- така се импортват само определени функции от даден модул
+import Data.List (sort)
+
+
+-- Рекурсивни дефиниции на map, filter, zip, zipWith, foldl и foldr:
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (x:xs) = f x:map f xs
+
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter f (x:xs) = if f x then x:fxs else fxs where
+    fxs = filter f xs
+
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (x:xs) (y:ys) = (x, y):zip xs ys
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+zipWith _ [] _ = []
+zipWith _ _ [] = []
+zipWith f (x:xs) (y:ys) = f x y:zipWith f xs ys
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f acc []     = acc
+foldl f acc (x:xs) = foldl f (f acc x) xs
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f acc []     = acc
+foldr f acc (x:xs) = f x (foldr f acc xs)
+
+
+{-
+Задача 1. Използвайте zipWith, за дефинирате myzip, същата като zip.
+
+    Пример: myzip [1..] ['a' .. 'z'] = [(1, 'a'), (2, 'b'), (3, 'c'), ... , (26, 'z')]
+-}
+myzip :: [a] -> [b] -> [(a, b)]
+myzip xs ys = zipWith help xs ys
+    where help x y = (x,y)
+
+{-
+Задача 2. Използвайте foldl/foldr, за да напишете функцията myconcat,
+същата като concat. 
+
+    Пример: myconcat [[1], [2], [3]] = [1, 2, 3]
+-}
+myconcat :: [[a]] -> [a]
+myconcat xs = foldr (++) [] xs
+
+{-
+Задача 3. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 10
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+
+Задача 4 от предишното упражнение: НЕ Е НУЖНО да решавате отново подточките,
+които сте решили предния път.
+-}
+mysum :: Num a => [a] -> a
+mysum xs = foldr (+) 0 xs
+
+myproduct :: Num a => [a] -> a
+myproduct xs = foldr (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = foldr (\x acc -> acc + 1) 0 xs
+
+myreverse :: [a] -> [a]
+myreverse xs = foldl (\acc x -> x:acc) [] xs
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = foldl (\acc x -> acc || f x) False xs
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = foldl (\acc x -> acc && f x) False xs
+
+mymin :: Ord a => [a] -> a
+mymin xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x < y = x
+      | otherwise = y
+
+mymax :: Ord a => [a] -> a
+mymax xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x > y = x
+      | otherwise = y
+
+
+{-
+Задача 4. Използвайте zipWith, за да напишете функциите:
+  а). myincreasing xs (зад. 1.б. от контролното)
+  б). mydecreasing xs (зад. 1.б. от контролното)
+  в). mysame xs, която проверява дали всички елементи на xs са еднакви
+  г). myimage xs ys (зад. 3 от контролното)
+-}
+myincreasing :: Ord a => [a] -> Bool
+myincreasing xs = zipWith incr xs (tail xs)
+    where 
+        incr (x:xs) (y:ys)
+	    | xs == [] || ys == [] = True
+	    | x < y = incr xs ys
+	    | otherwise = False
+
+mydecreasing :: Ord a => [a] -> Bool
+mydecreasing xs = undefined
+
+mysame :: Eq a => [a] -> Bool
+mysame xs = undefined
+
+myimage :: (Num a, Eq a) => [a] -> [a] -> Bool
+myimage xs ys = undefined
+
+{-
+Задача 5. Трансформация на Бъроус-Уилър (Burrows-Wheeler transform)
+
+Трансформацията на Бъроус-Уилър, е трансформация върху символни низове, която има
+интересното свойство да групира еднаквите символи в низа близо един до друг. 
+Поради тази причина, тя е често използвана като предварителна стъпка в алгоритмите
+за компресия на данни, както и в биоинформатиката.
+
+Алгоритъмът за намирането и е следния:
+1. Генерираме всички ротации на входния низ, което ни дава списък от низове.
+2. Сортираме списъка лексикографски.
+3. Взимаме последния символ от всеки от редовете.
+
+Пример:
+    "BANANA" -- rotations --> [ "BANANA", -- sort --> [ "ABANAN", -- last symbol --> "NNBAAA"
+                                "ANANAB",               "ANABAN",
+                                "NANABA",               "ANANAB",
+                                "ANABAN",               "BANANA",
+                                "NABANA",               "NABANA",
+                                "ABANAN" ]              "NANABA" ]
+
+a). Напишете функцията myrotate n str, която ротира низа str с n позиции наляво.
+
+    Пример: myrotate 1 "abc" = "bca"
+
+б). Напишете функцията myrotations str, която генерира всички ротации на str.
+
+    Пример: myrotations "abc" = ["abc", "bca", "cab"]
+
+в). Напишете функцията mybwt str, която приема низа str, и връща неговата трансформация
+на Бъроус-Уилър.
+
+    Пример: mybwt "BANANA" = "NNBAAA"
+-}
+myrotate :: Int -> [a] -> [a]
+myrotate n xs = undefined
+
+myrotations :: [a] -> [[a]]
+myrotations xs = undefined
+
+mybwt :: Ord a => [a] -> [a]
+mybwt xs = undefined
+
+{-
+Задача 6. Write what you say sequence:
+
+Редицата се дефинира, така:
+1           -- 1 единица
+11          -- 2 единици
+21          -- 1 двойка, 1 единица
+1211        -- 1 единица, 1 двойка, 2 единици
+111221      -- 3 единици, 2 двойки, 1 единица
+312211      -- ...
+13112221
+....
+
+Ще моделираме всеки ред като списък от цифрите му,
+тъй като това опростява решението.
+
+а). Напишете функцията mywwsnext xs, която приема елемент от редицата и 
+връща следващия след него елемент.
+    Пример: mywwsnext [1] = [1, 1]
+            mywwsnext [1, 2, 1, 1] = [1, 1, 1, 2, 2, 1]
+
+б). Напишете функцията myiterate f x, която приема функция f и първоначална
+стойност x, и връща безкрайния списък [x, f x, f (f x), f (f (fx)) ...]
+
+    Пример: take 5 (myiterate (+1) 0) = [0, 1, 2, 3, 4]
+
+в). Използвайте предните функции, за да напишете функцията mywwsall n, 
+която връща списък с първите n елемента на редицата
+
+    Пример: mywwsall 1 = [[1]]
+            mywwsall 5 = [[1], [1, 1], [2, 1], [1, 2, 1, 1] [1, 1, 1, 2, 2, 1]]
+
+г). Напишете функцията mywws n, която връща n-тия елемент от редицата.
+    
+    Пример: mywws 6 = [3, 1, 2, 2, 1, 1]
+-}
+mywwsnext :: [Int] -> [Int]
+mywwsnext xs = undefined
+
+myiterate :: (a -> a) -> a -> [a]
+myiterate f x = undefined
+
+mywwsall :: Int -> [[Int]]
+mywwsall n = undefined
+
+mywws :: Int -> [Int]
+mywws n = undefined
+
+
+-- Обичайните примери от условията 
+main :: IO()
+main = do
+    print ("exercise 1.")
+    print (myzip [1 ..] ['a' .. 'z'])
+
+    print ("exercise 2.") 
+    print (myconcat [[1], [2], [3]])
+
+    print ("exercise 3.")
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+
+    print ("exercise  4.")
+    print (myincreasing [1, 2, 3, 4])
+    print (myincreasing [1, 2, 5, 4])
+    print (mydecreasing [4, 3, 2, 1])
+    print (mydecreasing [4, 3, 5, 1])
+    print (myimage [1, 2, 3] [4, 5, 6])
+    print (myimage [1, 2, 3] [1, 2, 2])
+
+    print ("exercise  5.")
+    print (myrotate 1 "abc")
+    print (myrotations "abc")
+    print (mybwt "BANANA")
+
+    print ("exercise 6.")
+    print (mywwsnext [1])
+    print (mywwsnext [1, 2, 1, 1])
+    print (take 5 (myiterate (+1) 0))
+    print (mywwsall 1)
+    print (mywwsall 5)
+    print (mywws 6)
+ -- така можем да скрием дадени функции от прелюдията, за да си ги предефинираме сами
+import Prelude hiding (map, filter, zip, zipWith, foldl, foldr)
+-- така се импортват само определени функции от даден модул
+import Data.List (sort)
+
+
+-- Рекурсивни дефиниции на map, filter, zip, zipWith, foldl и foldr:
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (x:xs) = f x:map f xs
+
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter f (x:xs) = if f x then x:fxs else fxs where
+    fxs = filter f xs
+
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (x:xs) (y:ys) = (x, y):zip xs ys
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+zipWith _ [] _ = []
+zipWith _ _ [] = []
+zipWith f (x:xs) (y:ys) = f x y:zipWith f xs ys
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f acc []     = acc
+foldl f acc (x:xs) = foldl f (f acc x) xs
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f acc []     = acc
+foldr f acc (x:xs) = f x (foldr f acc xs)
+
+
+{-
+Задача 1. Използвайте zipWith, за дефинирате myzip, същата като zip.
+
+    Пример: myzip [1..] ['a' .. 'z'] = [(1, 'a'), (2, 'b'), (3, 'c'), ... , (26, 'z')]
+-}
+myzip :: [a] -> [b] -> [(a, b)]
+myzip xs ys = zipWith help xs ys
+    where help x y = (x,y)
+
+{-
+Задача 2. Използвайте foldl/foldr, за да напишете функцията myconcat,
+същата като concat. 
+
+    Пример: myconcat [[1], [2], [3]] = [1, 2, 3]
+-}
+myconcat :: [[a]] -> [a]
+myconcat xs = foldr (++) [] xs
+
+{-
+Задача 3. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 10
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+
+Задача 4 от предишното упражнение: НЕ Е НУЖНО да решавате отново подточките,
+които сте решили предния път.
+-}
+mysum :: Num a => [a] -> a
+mysum xs = foldr (+) 0 xs
+
+myproduct :: Num a => [a] -> a
+myproduct xs = foldr (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = foldr (\x acc -> acc + 1) 0 xs
+
+myreverse :: [a] -> [a]
+myreverse xs = foldl (\acc x -> x:acc) [] xs
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = foldl (\acc x -> acc || f x) False xs
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = foldl (\acc x -> acc && f x) False xs
+
+mymin :: Ord a => [a] -> a
+mymin xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x < y = x
+      | otherwise = y
+
+mymax :: Ord a => [a] -> a
+mymax xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x > y = x
+      | otherwise = y
+
+
+{-
+Задача 4. Използвайте zipWith, за да напишете функциите:
+  а). myincreasing xs (зад. 1.б. от контролното)
+  б). mydecreasing xs (зад. 1.б. от контролното)
+  в). mysame xs, която проверява дали всички елементи на xs са еднакви
+  г). myimage xs ys (зад. 3 от контролното)
+-}
+myincreasing :: Ord a => [a] -> Bool
+myincreasing xs = zipWith incr xs (tail xs)
+    where 
+        incr (x:xs) (y:ys)
+	    | xs == [] || ys == [] = True
+	    | x < y = incr xs ys
+	    | otherwise = False
+
+mydecreasing :: Ord a => [a] -> Bool
+mydecreasing xs = undefined
+
+mysame :: Eq a => [a] -> Bool
+mysame xs = undefined
+
+myimage :: (Num a, Eq a) => [a] -> [a] -> Bool
+myimage xs ys = undefined
+
+{-
+Задача 5. Трансформация на Бъроус-Уилър (Burrows-Wheeler transform)
+
+Трансформацията на Бъроус-Уилър, е трансформация върху символни низове, която има
+интересното свойство да групира еднаквите символи в низа близо един до друг. 
+Поради тази причина, тя е често използвана като предварителна стъпка в алгоритмите
+за компресия на данни, както и в биоинформатиката.
+
+Алгоритъмът за намирането и е следния:
+1. Генерираме всички ротации на входния низ, което ни дава списък от низове.
+2. Сортираме списъка лексикографски.
+3. Взимаме последния символ от всеки от редовете.
+
+Пример:
+    "BANANA" -- rotations --> [ "BANANA", -- sort --> [ "ABANAN", -- last symbol --> "NNBAAA"
+                                "ANANAB",               "ANABAN",
+                                "NANABA",               "ANANAB",
+                                "ANABAN",               "BANANA",
+                                "NABANA",               "NABANA",
+                                "ABANAN" ]              "NANABA" ]
+
+a). Напишете функцията myrotate n str, която ротира низа str с n позиции наляво.
+
+    Пример: myrotate 1 "abc" = "bca"
+
+б). Напишете функцията myrotations str, която генерира всички ротации на str.
+
+    Пример: myrotations "abc" = ["abc", "bca", "cab"]
+
+в). Напишете функцията mybwt str, която приема низа str, и връща неговата трансформация
+на Бъроус-Уилър.
+
+    Пример: mybwt "BANANA" = "NNBAAA"
+-}
+myrotate :: Int -> [a] -> [a]
+myrotate n xs = undefined
+
+myrotations :: [a] -> [[a]]
+myrotations xs = undefined
+
+mybwt :: Ord a => [a] -> [a]
+mybwt xs = undefined
+
+{-
+Задача 6. Write what you say sequence:
+
+Редицата се дефинира, така:
+1           -- 1 единица
+11          -- 2 единици
+21          -- 1 двойка, 1 единица
+1211        -- 1 единица, 1 двойка, 2 единици
+111221      -- 3 единици, 2 двойки, 1 единица
+312211      -- ...
+13112221
+....
+
+Ще моделираме всеки ред като списък от цифрите му,
+тъй като това опростява решението.
+
+а). Напишете функцията mywwsnext xs, която приема елемент от редицата и 
+връща следващия след него елемент.
+    Пример: mywwsnext [1] = [1, 1]
+            mywwsnext [1, 2, 1, 1] = [1, 1, 1, 2, 2, 1]
+
+б). Напишете функцията myiterate f x, която приема функция f и първоначална
+стойност x, и връща безкрайния списък [x, f x, f (f x), f (f (fx)) ...]
+
+    Пример: take 5 (myiterate (+1) 0) = [0, 1, 2, 3, 4]
+
+в). Използвайте предните функции, за да напишете функцията mywwsall n, 
+която връща списък с първите n елемента на редицата
+
+    Пример: mywwsall 1 = [[1]]
+            mywwsall 5 = [[1], [1, 1], [2, 1], [1, 2, 1, 1] [1, 1, 1, 2, 2, 1]]
+
+г). Напишете функцията mywws n, която връща n-тия елемент от редицата.
+    
+    Пример: mywws 6 = [3, 1, 2, 2, 1, 1]
+-}
+mywwsnext :: [Int] -> [Int]
+mywwsnext xs = undefined
+
+myiterate :: (a -> a) -> a -> [a]
+myiterate f x = undefined
+
+mywwsall :: Int -> [[Int]]
+mywwsall n = undefined
+
+mywws :: Int -> [Int]
+mywws n = undefined
+
+
+-- Обичайните примери от условията 
+main :: IO()
+main = do
+    print ("exercise 1.")
+    print (myzip [1 ..] ['a' .. 'z'])
+
+    print ("exercise 2.") 
+    print (myconcat [[1], [2], [3]])
+
+    print ("exercise 3.")
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+
+    print ("exercise  4.")
+    print (myincreasing [1, 2, 3, 4])
+    print (myincreasing [1, 2, 5, 4])
+    print (mydecreasing [4, 3, 2, 1])
+    print (mydecreasing [4, 3, 5, 1])
+    print (myimage [1, 2, 3] [4, 5, 6])
+    print (myimage [1, 2, 3] [1, 2, 2])
+
+    print ("exercise  5.")
+    print (myrotate 1 "abc")
+    print (myrotations "abc")
+    print (mybwt "BANANA")
+
+    print ("exercise 6.")
+    print (mywwsnext [1])
+    print (mywwsnext [1, 2, 1, 1])
+    print (take 5 (myiterate (+1) 0))
+    print (mywwsall 1)
+    print (mywwsall 5)
+    print (mywws 6)
+ -- така можем да скрием дадени функции от прелюдията, за да си ги предефинираме сами
+import Prelude hiding (map, filter, zip, zipWith, foldl, foldr)
+-- така се импортват само определени функции от даден модул
+import Data.List (sort)
+
+
+-- Рекурсивни дефиниции на map, filter, zip, zipWith, foldl и foldr:
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (x:xs) = f x:map f xs
+
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter f (x:xs) = if f x then x:fxs else fxs where
+    fxs = filter f xs
+
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (x:xs) (y:ys) = (x, y):zip xs ys
+
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c] 
+zipWith _ [] _ = []
+zipWith _ _ [] = []
+zipWith f (x:xs) (y:ys) = f x y:zipWith f xs ys
+
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f acc []     = acc
+foldl f acc (x:xs) = foldl f (f acc x) xs
+
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f acc []     = acc
+foldr f acc (x:xs) = f x (foldr f acc xs)
+
+
+{-
+Задача 1. Използвайте zipWith, за дефинирате myzip, същата като zip.
+
+    Пример: myzip [1..] ['a' .. 'z'] = [(1, 'a'), (2, 'b'), (3, 'c'), ... , (26, 'z')]
+-}
+myzip :: [a] -> [b] -> [(a, b)]
+myzip xs ys = zipWith help xs ys
+    where help x y = (x,y)
+
+{-
+Задача 2. Използвайте foldl/foldr, за да напишете функцията myconcat,
+същата като concat. 
+
+    Пример: myconcat [[1], [2], [3]] = [1, 2, 3]
+-}
+myconcat :: [[a]] -> [a]
+myconcat xs = foldr (++) [] xs
+
+{-
+Задача 3. Използвайте foldl/foldr, за да напишете следните функции:
+  а). mysum xs, същата като sum
+  б). myproduct xs, същата като product
+  в). mylen xs, същата като length
+  г). myreverse xs, същата като reverse
+  д). myany f xs, същата като any
+  e). myall f xs, същата като all
+  ж). mymax xs, същата като maximum
+  з). mymin xs, същата като minimum
+
+    Примери:
+        mysum [1..10] = 55
+        myproduct [1..10] = 3628800
+        mylen [1..10] = 10
+        myreverse [1..10] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+        myany even [1..10] = True
+        myall even [1..10] = False
+        mymin [1..10] = 1
+        mymax [1..10] = 10
+
+Задача 4 от предишното упражнение: НЕ Е НУЖНО да решавате отново подточките,
+които сте решили предния път.
+-}
+mysum :: Num a => [a] -> a
+mysum xs = foldr (+) 0 xs
+
+myproduct :: Num a => [a] -> a
+myproduct xs = foldr (*) 1 xs
+
+mylen :: Num b => [a] -> b
+mylen xs = foldr (\x acc -> acc + 1) 0 xs
+
+myreverse :: [a] -> [a]
+myreverse xs = foldl (\acc x -> x:acc) [] xs
+
+myany :: (a -> Bool) -> [a] -> Bool
+myany f xs = foldl (\acc x -> acc || f x) False xs
+
+myall :: (a -> Bool) -> [a] -> Bool
+myall f xs = foldl (\acc x -> acc && f x) False xs
+
+mymin :: Ord a => [a] -> a
+mymin xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x < y = x
+      | otherwise = y
+
+mymax :: Ord a => [a] -> a
+mymax xs = foldl (\y x -> mn x y) y xs
+   where 
+   y = head xs
+   mn x y
+      | x > y = x
+      | otherwise = y
+
+
+{-
+Задача 4. Използвайте zipWith, за да напишете функциите:
+  а). myincreasing xs (зад. 1.б. от контролното)
+  б). mydecreasing xs (зад. 1.б. от контролното)
+  в). mysame xs, която проверява дали всички елементи на xs са еднакви
+  г). myimage xs ys (зад. 3 от контролното)
+-}
+myincreasing :: Ord a => [a] -> Bool
+myincreasing xs = zipWith incr xs (tail xs)
+    where 
+        incr (x:xs) (y:ys)
+	    | xs == [] || ys == [] = True
+	    | x < y = incr xs ys
+	    | otherwise = False
+
+mydecreasing :: Ord a => [a] -> Bool
+mydecreasing xs = undefined
+
+mysame :: Eq a => [a] -> Bool
+mysame xs = undefined
+
+myimage :: (Num a, Eq a) => [a] -> [a] -> Bool
+myimage xs ys = undefined
+
+{-
+Задача 5. Трансформация на Бъроус-Уилър (Burrows-Wheeler transform)
+
+Трансформацията на Бъроус-Уилър, е трансформация върху символни низове, която има
+интересното свойство да групира еднаквите символи в низа близо един до друг. 
+Поради тази причина, тя е често използвана като предварителна стъпка в алгоритмите
+за компресия на данни, както и в биоинформатиката.
+
+Алгоритъмът за намирането и е следния:
+1. Генерираме всички ротации на входния низ, което ни дава списък от низове.
+2. Сортираме списъка лексикографски.
+3. Взимаме последния символ от всеки от редовете.
+
+Пример:
+    "BANANA" -- rotations --> [ "BANANA", -- sort --> [ "ABANAN", -- last symbol --> "NNBAAA"
+                                "ANANAB",               "ANABAN",
+                                "NANABA",               "ANANAB",
+                                "ANABAN",               "BANANA",
+                                "NABANA",               "NABANA",
+                                "ABANAN" ]              "NANABA" ]
+
+a). Напишете функцията myrotate n str, която ротира низа str с n позиции наляво.
+
+    Пример: myrotate 1 "abc" = "bca"
+
+б). Напишете функцията myrotations str, която генерира всички ротации на str.
+
+    Пример: myrotations "abc" = ["abc", "bca", "cab"]
+
+в). Напишете функцията mybwt str, която приема низа str, и връща неговата трансформация
+на Бъроус-Уилър.
+
+    Пример: mybwt "BANANA" = "NNBAAA"
+-}
+myrotate :: Int -> [a] -> [a]
+myrotate n xs = undefined
+
+myrotations :: [a] -> [[a]]
+myrotations xs = undefined
+
+mybwt :: Ord a => [a] -> [a]
+mybwt xs = undefined
+
+{-
+Задача 6. Write what you say sequence:
+
+Редицата се дефинира, така:
+1           -- 1 единица
+11          -- 2 единици
+21          -- 1 двойка, 1 единица
+1211        -- 1 единица, 1 двойка, 2 единици
+111221      -- 3 единици, 2 двойки, 1 единица
+312211      -- ...
+13112221
+....
+
+Ще моделираме всеки ред като списък от цифрите му,
+тъй като това опростява решението.
+
+а). Напишете функцията mywwsnext xs, която приема елемент от редицата и 
+връща следващия след него елемент.
+    Пример: mywwsnext [1] = [1, 1]
+            mywwsnext [1, 2, 1, 1] = [1, 1, 1, 2, 2, 1]
+
+б). Напишете функцията myiterate f x, която приема функция f и първоначална
+стойност x, и връща безкрайния списък [x, f x, f (f x), f (f (fx)) ...]
+
+    Пример: take 5 (myiterate (+1) 0) = [0, 1, 2, 3, 4]
+
+в). Използвайте предните функции, за да напишете функцията mywwsall n, 
+която връща списък с първите n елемента на редицата
+
+    Пример: mywwsall 1 = [[1]]
+            mywwsall 5 = [[1], [1, 1], [2, 1], [1, 2, 1, 1] [1, 1, 1, 2, 2, 1]]
+
+г). Напишете функцията mywws n, която връща n-тия елемент от редицата.
+    
+    Пример: mywws 6 = [3, 1, 2, 2, 1, 1]
+-}
+mywwsnext :: [Int] -> [Int]
+mywwsnext xs = undefined
+
+myiterate :: (a -> a) -> a -> [a]
+myiterate f x = undefined
+
+mywwsall :: Int -> [[Int]]
+mywwsall n = undefined
+
+mywws :: Int -> [Int]
+mywws n = undefined
+
+
+-- Обичайните примери от условията 
+main :: IO()
+main = do
+    print ("exercise 1.")
+    print (myzip [1 ..] ['a' .. 'z'])
+
+    print ("exercise 2.") 
+    print (myconcat [[1], [2], [3]])
+
+    print ("exercise 3.")
+    print (mysum [1..10])
+    print (myproduct [1..10])
+    print (mylen [1..10])
+    print (myreverse [1..10])
+    print (myany even [1..10])
+    print (myall even [1..10])
+    print (mymin [1..10])
+    print (mymax [1..10])
+
+    print ("exercise  4.")
+    print (myincreasing [1, 2, 3, 4])
+    print (myincreasing [1, 2, 5, 4])
+    print (mydecreasing [4, 3, 2, 1])
+    print (mydecreasing [4, 3, 5, 1])
+    print (myimage [1, 2, 3] [4, 5, 6])
+    print (myimage [1, 2, 3] [1, 2, 2])
+
+    print ("exercise  5.")
+    print (myrotate 1 "abc")
+    print (myrotations "abc")
+    print (mybwt "BANANA")
+
+    print ("exercise 6.")
+    print (mywwsnext [1])
+    print (mywwsnext [1, 2, 1, 1])
+    print (take 5 (myiterate (+1) 0))
+    print (mywwsall 1)
+    print (mywwsall 5)
+    print (mywws 6)
