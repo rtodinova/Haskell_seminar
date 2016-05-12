@@ -67,17 +67,21 @@ myboxvals grid crd = [ v | (crd',v,_) <- grid, mygroupid crd' == mygroupid crd]
 
 -- 2.е. Възможни стойности за дадена клетка 
 mycelloptions :: Grid -> Coords -> [Symbol]
-mycelloptions grid crd = undefined
+mycelloptions grid crd = mydigits \\ (rowvals `union` colvals `union` groupvals)
+		where
+		rowvals = myrowvals grid crd
+		volvals = mycolvals grid crd
+		groupvals = myboxvals grid crd
 
 
 -- Задача 3. Намиране на най-добър кандидат
 -- 3.а. Намиране на решените клетки
 mysolved :: Grid -> [Coords]
-mysolved grid = undefined
+mysolved grid = [crd | (crd,_,_) <- grid]
 
 -- 3.б. Намиране на нерешените клетки
 myunsolved :: Grid -> [Coords]
-myunsolved grid = undefined
+myunsolved grid = mygridcoordinates \\ (mysolved grid)
 
 -- 3.в. Намиране на най-добрият кандидат (нерешената клетка с най-малко възможни стойности)
 mybestcandidate :: Grid -> (Coords, [Symbol])
