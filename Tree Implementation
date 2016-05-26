@@ -1,0 +1,303 @@
+import Prelude hiding (Left, Right)
+
+
+{-
+Задача 1. Нека е дефиниран полиморфният алгебричен тип Tree описващ произволно двоично дърво.
+Да се напишат следните функции:
+    а). myTreeEmpty, която проверява дали дървото е празно.
+    б). myTreeDepth, която връща дълбочината на дървото.
+    в). myTreeCount, която връща броя на елементите в дървото.
+    г). myTreeLeavesCount, която връща броя на листата на дървото.
+    д). myTreeLeft, която връща лявото под-дърво.
+    е). myTreeRight, която връща дясното под-дърво.
+    ж). myTreeRootVal, която връща стойността на корена на дървото.
+    з). myTreeSum, която връща сбора на всички стойности в дърво, 
+        чийто стойности са събираеми (Num).
+    и). myTreeElem, която проверява дали дадена стойност е в дървото.
+-}
+data Tree a = Empty | Node a (Tree a) (Tree a)
+    deriving (Read, Show)
+
+myTreeEmpty :: Tree a -> Bool
+myTreeEmpty Empty = True
+myTreeEmpty _ = False
+
+myTreeDepth :: (Num b, Ord b) => Tree a -> b
+myTreeDepth Empty = 0
+myTreeDepth ( Node _ left right) = 1 + max (myTreeDepth left) (myTreeDepth right)
+
+myTreeCount :: (Num b) => Tree a -> b
+myTreeCount Empty = 0
+myTreeCount ( Node _ left right) = 1 + myTreeCount left + myTreeCount right
+
+myTreeLeavesCount :: (Num b) => Tree a -> b
+myTreeLeavesCount Empty = 0
+myTreeLeavesCount ( Node _ Empty Empty ) = 1
+myTreeLeavesCount ( Node _ left right ) = myTreeLeavesCount left + myTreeLeavesCount right
+
+myTreeLeft :: Tree a -> Tree a
+myTreeLeft Empty = Empty
+myTreeLeft ( Node _ left right ) = left
+
+myTreeRight :: Tree a -> Tree a
+myTreeRight Empty = error "Empty Tree"
+myTreeRight ( Node _ left right ) = right
+
+myTreeRootVal :: Tree a -> a
+myTreeRootVal Empty = error "Empty Tree"
+myTreeRootVal ( Node a left right ) = a
+
+myTreeSum :: (Num a) => Tree a -> a
+myTreeSum Empty = 0
+myTreeSum ( Node a left right ) = a + myTreeSum left + myTreeSum right
+
+myTreeElem :: (Eq a) => Tree a -> a -> Bool
+myTreeElem Empty _ = False
+myTreeElem ( Node a left right ) val
+	| a == val = True
+	| otherwise = myTreeElem left val || myTreeElem right val
+
+{-
+Задача 2. Нека също така дефинираме типа TreeDirection.
+Да се напишат функциите:
+    a). myTreeWalk tree dirs, която връща под-дървото по дадения път dirs. 
+    б). myTreeVal tree dirs, която връща стойността по дадения път dirs.
+-}
+data TreeDirection = Left | Right 
+    deriving (Read, Show)
+
+myTreeWalk :: Tree a -> [TreeDirection] -> Tree a
+myTreeWalk Empty _ = error " Empty Tree"
+myTreeWalk tree [] = tree
+myTreeWalk tree (Left:dirs) = myTreeWalk (myTreeLeft tree) dirs
+myTreeWalk tree (Right:dirs) = myTreeWalk (myTreeRight tree) dirs
+
+
+myTreeVal :: (Num a) => Tree a -> [TreeDirection] -> a
+myTreeVal Empty _ = error "Empty Tree"
+myTreeVal tree [] = myTreeSum tree
+myTreeVal tree dirs = myTreeSum ( myTreeWalk tree dirs )
+
+
+-- Обичайните примери от условията
+main :: IO()
+main = let
+        tree = Node 3 (Node 2 (Node 1 Empty Empty) Empty) (Node 9 (Node 6 (Node 4 Empty Empty) (Node 8 Empty Empty)) (Node 11 Empty Empty))
+        dirs = [Right, Left, Left]
+    in do
+        print $ tree
+        print $ myTreeEmpty tree
+        print $ myTreeDepth tree
+        print $ myTreeCount tree
+        print $ myTreeLeavesCount tree
+        print $ myTreeLeft tree
+        print $ myTreeRight tree
+        print $ myTreeRootVal tree
+        print $ myTreeSum tree
+        print $ myTreeElem tree 9
+        print $ myTreeElem tree 17
+
+        print $ myTreeWalk tree dirs
+        print $ myTreeVal tree dirs
+import Prelude hiding (Left, Right)
+
+
+{-
+Задача 1. Нека е дефиниран полиморфният алгебричен тип Tree описващ произволно двоично дърво.
+Да се напишат следните функции:
+    а). myTreeEmpty, която проверява дали дървото е празно.
+    б). myTreeDepth, която връща дълбочината на дървото.
+    в). myTreeCount, която връща броя на елементите в дървото.
+    г). myTreeLeavesCount, която връща броя на листата на дървото.
+    д). myTreeLeft, която връща лявото под-дърво.
+    е). myTreeRight, която връща дясното под-дърво.
+    ж). myTreeRootVal, която връща стойността на корена на дървото.
+    з). myTreeSum, която връща сбора на всички стойности в дърво, 
+        чийто стойности са събираеми (Num).
+    и). myTreeElem, която проверява дали дадена стойност е в дървото.
+-}
+data Tree a = Empty | Node a (Tree a) (Tree a)
+    deriving (Read, Show)
+
+myTreeEmpty :: Tree a -> Bool
+myTreeEmpty Empty = True
+myTreeEmpty _ = False
+
+myTreeDepth :: (Num b, Ord b) => Tree a -> b
+myTreeDepth Empty = 0
+myTreeDepth ( Node _ left right) = 1 + max (myTreeDepth left) (myTreeDepth right)
+
+myTreeCount :: (Num b) => Tree a -> b
+myTreeCount Empty = 0
+myTreeCount ( Node _ left right) = 1 + myTreeCount left + myTreeCount right
+
+myTreeLeavesCount :: (Num b) => Tree a -> b
+myTreeLeavesCount Empty = 0
+myTreeLeavesCount ( Node _ Empty Empty ) = 1
+myTreeLeavesCount ( Node _ left right ) = myTreeLeavesCount left + myTreeLeavesCount right
+
+myTreeLeft :: Tree a -> Tree a
+myTreeLeft Empty = Empty
+myTreeLeft ( Node _ left right ) = left
+
+myTreeRight :: Tree a -> Tree a
+myTreeRight Empty = error "Empty Tree"
+myTreeRight ( Node _ left right ) = right
+
+myTreeRootVal :: Tree a -> a
+myTreeRootVal Empty = error "Empty Tree"
+myTreeRootVal ( Node a left right ) = a
+
+myTreeSum :: (Num a) => Tree a -> a
+myTreeSum Empty = 0
+myTreeSum ( Node a left right ) = a + myTreeSum left + myTreeSum right
+
+myTreeElem :: (Eq a) => Tree a -> a -> Bool
+myTreeElem Empty _ = False
+myTreeElem ( Node a left right ) val
+	| a == val = True
+	| otherwise = myTreeElem left val || myTreeElem right val
+
+{-
+Задача 2. Нека също така дефинираме типа TreeDirection.
+Да се напишат функциите:
+    a). myTreeWalk tree dirs, която връща под-дървото по дадения път dirs. 
+    б). myTreeVal tree dirs, която връща стойността по дадения път dirs.
+-}
+data TreeDirection = Left | Right 
+    deriving (Read, Show)
+
+myTreeWalk :: Tree a -> [TreeDirection] -> Tree a
+myTreeWalk Empty _ = error " Empty Tree"
+myTreeWalk tree [] = tree
+myTreeWalk tree (Left:dirs) = myTreeWalk (myTreeLeft tree) dirs
+myTreeWalk tree (Right:dirs) = myTreeWalk (myTreeRight tree) dirs
+
+
+myTreeVal :: (Num a) => Tree a -> [TreeDirection] -> a
+myTreeVal Empty _ = error "Empty Tree"
+myTreeVal tree [] = myTreeSum tree
+myTreeVal tree dirs = myTreeSum ( myTreeWalk tree dirs )
+
+
+-- Обичайните примери от условията
+main :: IO()
+main = let
+        tree = Node 3 (Node 2 (Node 1 Empty Empty) Empty) (Node 9 (Node 6 (Node 4 Empty Empty) (Node 8 Empty Empty)) (Node 11 Empty Empty))
+        dirs = [Right, Left, Left]
+    in do
+        print $ tree
+        print $ myTreeEmpty tree
+        print $ myTreeDepth tree
+        print $ myTreeCount tree
+        print $ myTreeLeavesCount tree
+        print $ myTreeLeft tree
+        print $ myTreeRight tree
+        print $ myTreeRootVal tree
+        print $ myTreeSum tree
+        print $ myTreeElem tree 9
+        print $ myTreeElem tree 17
+
+        print $ myTreeWalk tree dirs
+        print $ myTreeVal tree dirs
+import Prelude hiding (Left, Right)
+
+
+{-
+Задача 1. Нека е дефиниран полиморфният алгебричен тип Tree описващ произволно двоично дърво.
+Да се напишат следните функции:
+    а). myTreeEmpty, която проверява дали дървото е празно.
+    б). myTreeDepth, която връща дълбочината на дървото.
+    в). myTreeCount, която връща броя на елементите в дървото.
+    г). myTreeLeavesCount, която връща броя на листата на дървото.
+    д). myTreeLeft, която връща лявото под-дърво.
+    е). myTreeRight, която връща дясното под-дърво.
+    ж). myTreeRootVal, която връща стойността на корена на дървото.
+    з). myTreeSum, която връща сбора на всички стойности в дърво, 
+        чийто стойности са събираеми (Num).
+    и). myTreeElem, която проверява дали дадена стойност е в дървото.
+-}
+data Tree a = Empty | Node a (Tree a) (Tree a)
+    deriving (Read, Show)
+
+myTreeEmpty :: Tree a -> Bool
+myTreeEmpty Empty = True
+myTreeEmpty _ = False
+
+myTreeDepth :: (Num b, Ord b) => Tree a -> b
+myTreeDepth Empty = 0
+myTreeDepth ( Node _ left right) = 1 + max (myTreeDepth left) (myTreeDepth right)
+
+myTreeCount :: (Num b) => Tree a -> b
+myTreeCount Empty = 0
+myTreeCount ( Node _ left right) = 1 + myTreeCount left + myTreeCount right
+
+myTreeLeavesCount :: (Num b) => Tree a -> b
+myTreeLeavesCount Empty = 0
+myTreeLeavesCount ( Node _ Empty Empty ) = 1
+myTreeLeavesCount ( Node _ left right ) = myTreeLeavesCount left + myTreeLeavesCount right
+
+myTreeLeft :: Tree a -> Tree a
+myTreeLeft Empty = Empty
+myTreeLeft ( Node _ left right ) = left
+
+myTreeRight :: Tree a -> Tree a
+myTreeRight Empty = error "Empty Tree"
+myTreeRight ( Node _ left right ) = right
+
+myTreeRootVal :: Tree a -> a
+myTreeRootVal Empty = error "Empty Tree"
+myTreeRootVal ( Node a left right ) = a
+
+myTreeSum :: (Num a) => Tree a -> a
+myTreeSum Empty = 0
+myTreeSum ( Node a left right ) = a + myTreeSum left + myTreeSum right
+
+myTreeElem :: (Eq a) => Tree a -> a -> Bool
+myTreeElem Empty _ = False
+myTreeElem ( Node a left right ) val
+	| a == val = True
+	| otherwise = myTreeElem left val || myTreeElem right val
+
+{-
+Задача 2. Нека също така дефинираме типа TreeDirection.
+Да се напишат функциите:
+    a). myTreeWalk tree dirs, която връща под-дървото по дадения път dirs. 
+    б). myTreeVal tree dirs, която връща стойността по дадения път dirs.
+-}
+data TreeDirection = Left | Right 
+    deriving (Read, Show)
+
+myTreeWalk :: Tree a -> [TreeDirection] -> Tree a
+myTreeWalk Empty _ = error " Empty Tree"
+myTreeWalk tree [] = tree
+myTreeWalk tree (Left:dirs) = myTreeWalk (myTreeLeft tree) dirs
+myTreeWalk tree (Right:dirs) = myTreeWalk (myTreeRight tree) dirs
+
+
+myTreeVal :: (Num a) => Tree a -> [TreeDirection] -> a
+myTreeVal Empty _ = error "Empty Tree"
+myTreeVal tree [] = myTreeSum tree
+myTreeVal tree dirs = myTreeSum ( myTreeWalk tree dirs )
+
+
+-- Обичайните примери от условията
+main :: IO()
+main = let
+        tree = Node 3 (Node 2 (Node 1 Empty Empty) Empty) (Node 9 (Node 6 (Node 4 Empty Empty) (Node 8 Empty Empty)) (Node 11 Empty Empty))
+        dirs = [Right, Left, Left]
+    in do
+        print $ tree
+        print $ myTreeEmpty tree
+        print $ myTreeDepth tree
+        print $ myTreeCount tree
+        print $ myTreeLeavesCount tree
+        print $ myTreeLeft tree
+        print $ myTreeRight tree
+        print $ myTreeRootVal tree
+        print $ myTreeSum tree
+        print $ myTreeElem tree 9
+        print $ myTreeElem tree 17
+
+        print $ myTreeWalk tree dirs
+        print $ myTreeVal tree dirs
