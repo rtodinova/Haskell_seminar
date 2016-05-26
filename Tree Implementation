@@ -173,11 +173,15 @@ myTreeWalk tree [] = tree
 myTreeWalk tree (Left:dirs) = myTreeWalk (myTreeLeft tree) dirs
 myTreeWalk tree (Right:dirs) = myTreeWalk (myTreeRight tree) dirs
 
-
-myTreeVal :: (Num a) => Tree a -> [TreeDirection] -> a
+myTreeVal :: Tree a -> [TreeDirection] -> a
 myTreeVal Empty _ = error "Empty Tree"
 myTreeVal tree [] = myTreeSum tree
-myTreeVal tree dirs = myTreeSum ( myTreeWalk tree dirs )
+myTreeVal tree dirs = myTreeRootVal( myTreeWalk tree dirs )
+
+myTreePath :: Tree a -> [TreeDirection] -> [a]
+myTreePath tree [] = [myTreeRootVal tree]
+myThreePath tree (Left:dirs) = (myTreeRootVal tree) : (myTreePath tree dirs)
+myThreePath tree (Right:dirs) = (myTreeRootVal tree) : (myTreePath tree dirs)
 
 
 -- Обичайните примери от условията
